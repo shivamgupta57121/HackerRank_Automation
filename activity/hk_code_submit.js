@@ -1,5 +1,6 @@
 let puppeteer = require("puppeteer");
-let {email, password} = require("../secret");
+let { email, password } = require("../secret");
+let { codes } = require("./code");
 let gtab;
 console.log("Before");
 let browserPromise = puppeteer.launch({
@@ -8,7 +9,7 @@ let browserPromise = puppeteer.launch({
     args: ["--start-maximized"] //"--incoignito"
 })
 browserPromise
-    .then(function (browserInstance){
+    .then(function (browserInstance) {
         let newTabPromise = browserInstance.newPage();
         return newTabPromise;
     })
@@ -20,41 +21,84 @@ browserPromise
     })
     .then(function () {
         // console.log("login page opened");
-        let emailWillBeTypesPromise = gtab.type("#input-1",email,{delay: 200});
+        let emailWillBeTypesPromise = gtab.type("#input-1", email, { delay: 200 });
         return emailWillBeTypesPromise;
     })
     .then(function () {
-        let passwordWillBeTypesPromise = gtab.type("#input-2",password,{delay: 200});
+        let passwordWillBeTypesPromise = gtab.type("#input-2", password, { delay: 200 });
         return passwordWillBeTypesPromise;
     })
     .then(function () {
         let loginPageWillBeClickedPromise = gtab.click("button[data-analytics='LoginPassword']");
-        let IPKitChallengeElementPromise = gtab.waitForSelector(".card-content h3[title = 'Interview Preparation Kit']",{ visible: true });
-        let combinedPromise = Promise.all([loginPageWillBeClickedPromise, gtab.waitForNavigation({waitUntil:"networkidle0" }), IPKitChallengeElementPromise]);
-        return combinedPromise;
+        return loginPageWillBeClickedPromise;
     })
     .then(function () {
-        console.log("Login Done IPK element loaded");
-        let interviewPrepKitPromise = gtab.click(".card-content h3[title = 'Interview Preparation Kit']");
-        let WarmUpChallengeElementPromise = gtab.waitForSelector("a[data-attr1 = 'warmup']",{ visible: true });
-        let combinedPromise = Promise.all([interviewPrepKitPromise, gtab.waitForNavigation({waitUntil:"networkidle0" }), WarmUpChallengeElementPromise]);
-        return combinedPromise;
+        console.log("Login Done");
+        let clickIPKit = waitAndClick(".card-content h3[title = 'Interview Preparation Kit']");
+        return clickIPKit;
     })
     .then(function () {
-        console.log("Interview Prep Kit Page Opened And Warm up Challenge loaded");
-        let warmUpChallengePromise = gtab.click("a[data-attr1 = 'warmup']");
-        let sockMerchantPromise = gtab.waitForSelector("a[data-attr1 = 'sock-merchant']",{ visible: true });
-        let combinedPromise = Promise.all([warmUpChallengePromise, gtab.waitForNavigation({waitUntil:"networkidle0" }), sockMerchantPromise]);
-        return combinedPromise;
+        console.log("Interview Prep Kit Page Opened");
+        let warmUpClick = waitAndClick("a[data-attr1 = 'warmup']");
+        return warmUpClick;
     })
     .then(function () {
-        console.log("Warm-up Page Opened and Sock merchant loaded");
-        let clickPromise = gtab.click("a[data-attr1 = 'sock-merchant']");
-        let combinedPromise = Promise.all([clickPromise, gtab.waitForNavigation({waitUntil:"networkidle0" })]);
-        return combinedPromise;
+        let url = gtab.url();
+        console.log(url);
+        let questionObj = codes[0];
+        questionSolver(url, questionObj.qName, questionObj.soln);
     })
     .catch(function (err) {
         console.log(err);
     })
-
+// promise based function -> wait and click
+function waitAndClick(selector) {
+    return new Promise(function (resolve, reject) {
+        let selectorWaitPromise =
+            gtab.waitForSelector(selector, { visible: true });
+        selectorWaitPromise
+            .then(function () {
+                let selectorClickPromise = gtab.click(selector);
+                return selectorClickPromise;
+            }).then(function () {
+                resolve();
+            }).catch(function () {
+                reject(err);
+            })
+    })
+}
+function questionSolver(modulepageUrl, questionName, code) {
+    return new Promise(function (resolve, reject) {
+        // page visit
+        let reachedPageUrlPromise = gtab.goto(modulepageUrl);
+        reachedPageUrlPromise
+            .then(function () {
+                //  page h4 -> mathcing h4 -> click
+                // function will exceute inside the browser
+                function browserconsolerunFn(questionName) {
+                    let allH4Elem = document.querySelectorAll("h4");
+                    let textArr = [];
+                    for (let i = 0; i < allH4Elem.length; i++) {
+                        let myQuestion = allH4Elem[i]
+                            .innerText.split("\n")[0];
+                        textArr.push(myQuestion);
+                    }
+                    let idx = textArr.indexOf(questionName);
+                    // console.log(idx);
+                    // console.log("hello");
+                    allH4Elem[idx].click();
+                }
+                let pageClickPromise =
+                    gtab.evaluate(browserconsolerunFn, questionName);
+                return pageClickPromise;
+            }).then(function () {
+                resolve();
+            })
+        // questionName-> appear -> click
+        // read 
+        // copy
+        // paste
+        // submit 
+    })
+}
 console.log("After");
