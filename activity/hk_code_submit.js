@@ -67,6 +67,7 @@ function waitAndClick(selector) {
             })
     })
 }
+// question solver function
 function questionSolver(modulepageUrl, questionName, code) {
     return new Promise(function (resolve, reject) {
         // page visit
@@ -75,6 +76,7 @@ function questionSolver(modulepageUrl, questionName, code) {
             .then(function () {
                 //  page h4 -> mathcing h4 -> click
                 // function will exceute inside the browser
+                // questionName-> appear -> click
                 function browserconsolerunFn(questionName) {
                     let allH4Elem = document.querySelectorAll("h4");
                     let textArr = [];
@@ -91,14 +93,86 @@ function questionSolver(modulepageUrl, questionName, code) {
                 let pageClickPromise =
                     gtab.evaluate(browserconsolerunFn, questionName);
                 return pageClickPromise;
-            }).then(function () {
+            })
+            .then(function () {
+                // checkbox click
+                let inputWillBeClickedPromise = waitAndClick(".custom-checkbox.inline");
+                return inputWillBeClickedPromise;
+            })
+            .then(function () {
+                // type
+                let codeWillBeTypedPromise = gtab.type(".custominput", code);
+                return codeWillBeTypedPromise;
+            })
+            .then(function () {
+                // hold the control
+                let controlWillBeHoldPromise = gtab.keyboard.down("Control");
+                return controlWillBeHoldPromise;
+            })
+            .then(function () {
+                // select all --- press a
+                let selectAllPromise = gtab.keyboard.press("A");
+                return selectAllPromise;
+            })
+            .then(function () {
+                // cut --- press x
+                let cutPromise = gtab.keyboard.press("X");
+                return cutPromise;
+            })
+            .then(function () {
+                // click in editor
+                let editorWillBeClickedPromise = gtab.click(".monaco-editor.no-user-select.vs");
+                return editorWillBeClickedPromise;
+            })
+            .then(function () {
+                // select all --- press a
+                let selectAllPromise = gtab.keyboard.press("A");
+                return selectAllPromise;
+            })
+            .then(function () {
+                // paste --- press x
+                let pastePromise = gtab.keyboard.press("V");
+                return pastePromise;
+            })
+            .then(function () {
+                // release the control
+                let controlWillBeReleasedPromise = gtab.keyboard.down("Control");
+                return controlWillBeReleasedPromise;
+            })
+            .then(function () {
+                let submitIsClickedPromise = gtab.click(".pull-right.btn.btn-primary.hr-monaco-submit");
+                return submitIsClickedPromise;
+            })
+            .then(function () {
                 resolve();
             })
-        // questionName-> appear -> click
-        // read 
-        // copy
-        // paste
-        // submit 
+            .catch(function () {
+                reject(err);
+            })
+    })
+}
+// change settings function
+function settingHandler() {
+    return new Promise(function (resolve, reject) {
+
+        // click on settings btn
+        let settingClickPromise = waitAndClick("button[aria-label='Editor Settings']");
+        settingClickPromise
+            .then(function () {
+                // click on disable
+                let disableButtonClickPromise = waitAndClick("button[aria-label='Disable Autocomplete']");
+                return disableButtonClickPromise;
+            }).then(function () {
+                // click on setting button btn
+                let settingIsClickedpromise = gtab.click("button[aria-label='Editor Settings']");
+                return settingIsClickedpromise;
+            }).then(function () {
+                resolve();
+            }).catch(function () {
+                reject(err);
+            })
+        // autocomplete -> wait ,click
+
     })
 }
 console.log("After");
