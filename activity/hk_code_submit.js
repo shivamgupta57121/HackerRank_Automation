@@ -21,12 +21,12 @@ browserPromise
     })
     .then(function () {
         // console.log("login page opened");
-        let emailWillBeTypesPromise = gtab.type("#input-1", email, { delay: 200 });
-        return emailWillBeTypesPromise;
+        let emailWillBeTypedPromise = gtab.type("#input-1", email, { delay: 200 });
+        return emailWillBeTypedPromise;
     })
     .then(function () {
-        let passwordWillBeTypesPromise = gtab.type("#input-2", password, { delay: 200 });
-        return passwordWillBeTypesPromise;
+        let passwordWillBeTypedPromise = gtab.type("#input-2", password, { delay: 200 });
+        return passwordWillBeTypedPromise;
     })
     .then(function () {
         let loginPageWillBeClickedPromise = gtab.click("button[data-analytics='LoginPassword']");
@@ -46,7 +46,16 @@ browserPromise
         let url = gtab.url();
         console.log(url);
         let questionObj = codes[0];
-        questionSolver(url, questionObj.qName, questionObj.soln);
+        let fqsp = questionSolver(url, questionObj.qName, questionObj.soln);
+        for(let i = 1 ; i < codes.length ; i++){
+            fqsp = fqsp.then(function(){
+                return questionSolver(url, codes[i].qName, codes[i].soln);
+            })
+        }
+        return fqsp;
+    })
+    .then(function (){
+        console.log("All questions submitted");
     })
     .catch(function (err) {
         console.log(err);
