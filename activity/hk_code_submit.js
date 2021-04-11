@@ -145,7 +145,7 @@ function questionSolver(modulepageUrl, questionName, code) {
             })
             .then(function () {
                 // release the control
-                let controlWillBeReleasedPromise = gtab.keyboard.down("Control");
+                let controlWillBeReleasedPromise = gtab.keyboard.up("Control");
                 return controlWillBeReleasedPromise;
             })
             .then(function () {
