@@ -43,11 +43,16 @@ async function questionSolver(modulepageUrl, questionName, code, gtab) {
             let idx = textArr.indexOf(questionName);
             // console.log(idx);
             // console.log("hello");
-            allH4Elem[idx].click();
+            return allH4Elem[idx].click(); //------------
         }
         await gtab.evaluate(browserconsolerunFn, questionName);
-        await waitAndClick(".custom-checkbox.inline", gtab);
-        await gtab.type(".custominput", code);
+
+        // Wait for any element on next page since checkbox with same class present on current page also
+        // If will not use this current page checkbox will be checked and code will not work further  
+        await gtab.waitForSelector("div[data-attr2='Submissions']", { visible: true });  
+
+        await waitAndClick("input[type='checkbox']", gtab); // prev class - .custom-checkbox.inline
+        await gtab.type(".custominput", code, { delay: 50 });
         await gtab.keyboard.down("Control");
         await gtab.keyboard.press("A");
         await gtab.keyboard.press("X");
@@ -55,7 +60,7 @@ async function questionSolver(modulepageUrl, questionName, code, gtab) {
         await gtab.keyboard.press("A");
         await gtab.keyboard.press("V");
         await gtab.keyboard.up("Control");
-        return gtab.click(".pull-right.btn.btn-primary.hr-monaco-submit");    
+        return gtab.click(".hr-monaco-submit");     // prev class - .pull-right.btn.btn-primary.hr-monaco-submit
 }
 
 console.log("After");
