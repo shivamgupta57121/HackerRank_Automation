@@ -103,9 +103,16 @@ function questionSolver(modulepageUrl, questionName, code) {
                     gtab.evaluate(browserconsolerunFn, questionName);
                 return pageClickPromise;
             })
+            // Wait for any element on next page since checkbox with same class present on current page also
+            // If will not use this current page checkbox will be checked and code will not work further  
             .then(function () {
                 // checkbox click
-                let inputWillBeClickedPromise = waitAndClick(".custom-checkbox.inline");
+                let nextPageReached = gtab.waitForSelector("div[data-attr2='Submissions']", { visible: true });
+                return nextPageReached;
+            })
+            .then(function () {
+                // checkbox click
+                let inputWillBeClickedPromise = waitAndClick("input[type='checkbox']"); // prev class - .custom-checkbox.inline
                 return inputWillBeClickedPromise;
             })
             .then(function () {
@@ -149,7 +156,7 @@ function questionSolver(modulepageUrl, questionName, code) {
                 return controlWillBeReleasedPromise;
             })
             .then(function () {
-                let submitIsClickedPromise = gtab.click(".pull-right.btn.btn-primary.hr-monaco-submit");
+                let submitIsClickedPromise = gtab.click(".hr-monaco-submit");     // prev class - .pull-right.btn.btn-primary.hr-monaco-submit
                 return submitIsClickedPromise;
             })
             .then(function () {
